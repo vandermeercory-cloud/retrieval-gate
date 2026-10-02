@@ -1,0 +1,187 @@
+{
+  "description": "Questions a developer might ask, each with the proposal that answers it. Minimums are set below measured performance with a margin, and a ranker that falls under any of them fails.",
+  "minimums": {
+    "hit_rate_at_k": 0.9,
+    "mean_reciprocal_rank": 0.75,
+    "mean_recall_at_k": 0.9
+  },
+  "cases": [
+    {
+      "query": "naming conventions for functions and variables",
+      "relevant": [
+        "pep-0008.rst"
+      ]
+    },
+    {
+      "query": "embed expressions inside string literals",
+      "relevant": [
+        "pep-0498.rst",
+        "pep-0701.rst"
+      ]
+    },
+    {
+      "query": "assign a variable inside an expression",
+      "relevant": [
+        "pep-0572.rst"
+      ]
+    },
+    {
+      "query": "match statement with case patterns",
+      "relevant": [
+        "pep-0634.rst",
+        "pep-0636.rst"
+      ]
+    },
+    {
+      "query": "coroutines declared with async and await",
+      "relevant": [
+        "pep-0492.rst"
+      ]
+    },
+    {
+      "query": "generate __init__ and __repr__ for classes that hold data",
+      "relevant": [
+        "pep-0557.rst"
+      ]
+    },
+    {
+      "query": "annotate the types of function parameters",
+      "relevant": [
+        "pep-0484.rst"
+      ]
+    },
+    {
+      "query": "isolated environment with its own site-packages",
+      "relevant": [
+        "pep-0405.rst"
+      ]
+    },
+    {
+      "query": "enumeration of named constant members",
+      "relevant": [
+        "pep-0435.rst"
+      ]
+    },
+    {
+      "query": "parameters that can only be passed by position",
+      "relevant": [
+        "pep-0570.rst"
+      ]
+    },
+    {
+      "query": "merge two dictionaries with the pipe operator",
+      "relevant": [
+        "pep-0584.rst"
+      ]
+    },
+    {
+      "query": "structural subtyping without explicit inheritance",
+      "relevant": [
+        "pep-0544.rst"
+      ]
+    },
+    {
+      "query": "dictionary type with a fixed set of keys",
+      "relevant": [
+        "pep-0589.rst"
+      ]
+    },
+    {
+      "query": "raise and handle several unrelated exceptions at once",
+      "relevant": [
+        "pep-0654.rst"
+      ]
+    },
+    {
+      "query": "remove a prefix or suffix from a string",
+      "relevant": [
+        "pep-0616.rst"
+      ]
+    },
+    {
+      "query": "zip that raises when the iterables have different lengths",
+      "relevant": [
+        "pep-0618.rst"
+      ]
+    },
+    {
+      "query": "parse TOML in the standard library",
+      "relevant": [
+        "pep-0680.rst"
+      ]
+    },
+    {
+      "query": "make the global interpreter lock optional",
+      "relevant": [
+        "pep-0703.rst"
+      ]
+    },
+    {
+      "query": "acquire and release resources with a with statement",
+      "relevant": [
+        "pep-0343.rst"
+      ]
+    },
+    {
+      "query": "delegate to a subgenerator",
+      "relevant": [
+        "pep-0380.rst"
+      ]
+    },
+    {
+      "query": "secure random tokens for passwords",
+      "relevant": [
+        "pep-0506.rst"
+      ]
+    },
+    {
+      "query": "underscores as visual separators in numeric literals",
+      "relevant": [
+        "pep-0515.rst"
+      ]
+    },
+    {
+      "query": "declare build system requirements in pyproject",
+      "relevant": [
+        "pep-0518.rst"
+      ]
+    },
+    {
+      "query": "mark a method as overriding its parent",
+      "relevant": [
+        "pep-0698.rst"
+      ]
+    },
+    {
+      "query": "annotate a method that returns an instance of its own class",
+      "relevant": [
+        "pep-0673.rst"
+      ]
+    },
+    {
+      "query": "operator for matrix multiplication",
+      "relevant": [
+        "pep-0465.rst"
+      ]
+    },
+    {
+      "query": "conventions for writing docstrings",
+      "relevant": [
+        "pep-0257.rst"
+      ]
+    },
+    {
+      "query": "attach extra notes to an exception",
+      "relevant": [
+        "pep-0678.rst"
+      ]
+    },
+    {
+      "query": "point at the exact expression that failed in a traceback",
+      "relevant": [
+        "pep-0657.rst"
+      ]
+    }
+  ],
+  "minimums_note": "Set on 2026-10-01 below measured performance (capped: 0.966 / 0.823 / 0.966; bm25: 0.931 / 0.879 / 0.931) with a margin, so a real regression fails and noise does not."
+}

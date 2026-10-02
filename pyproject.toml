@@ -1,0 +1,7 @@
+[project]
+name = "retrieval-gate"
+version = "1.0.0"
+description = "A lexical retrieval layer that has to pass its own evaluation before it is trusted."
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
