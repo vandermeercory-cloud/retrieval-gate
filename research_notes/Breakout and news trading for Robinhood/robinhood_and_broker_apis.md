@@ -347,3 +347,163 @@ Unofficial private-API scraping of the main account is technically possible but 
 ### Gaps
 - The MCP's actual order types, rate limits, session or token lifetime, and any rules on non-LLM automated clients are unverified; Robinhood's docs and support hosts were blocked.
 - I found no confirmation of a Robinhood market-data streaming API or webhooks for retail developers.
+
+## 6. Added constraint: $100 account, no day trading (swing holds overnight or longer). Fractional and notional orders, minimum order sizes, small-account fees, and Robinhood Crypto API minimums and fees
+
+### Takeaway
+A $100 swing account is workable at Robinhood, Alpaca, IBKR Lite, E*TRADE and tastytrade, which all report $0 minimums and no inactivity fees.
+
+Watch-outs:
+- **Tradier** charges $50/year inactivity for accounts under $2,000 with fewer than 2 trades a year.
+- **Public** reportedly needs a $20 minimum deposit and charges $3.99/month inactivity on accounts under $70 after 6 months.
+- **IBKR's API market data** needs IBKR Pro plus $500 in the account, which is out of reach at $100.
+
+Fractional and dollar-amount ("notional") orders are supported via API at:
+- **Robinhood** (app: $1 minimum; via MCP: conflicting reports).
+- **Alpaca** ($1 minimum).
+- **IBKR** (`cashQty`, with fractional trading enabled).
+- **Webull** ($5 minimum, market orders only).
+- **Public** (`amount` field).
+
+Many brokers restrict fractional orders to market-only or DAY-only. A swing trader may therefore be unable to keep a resting overnight stop on a fractional position through the API.
+
+Robinhood Crypto charges no commission on default market-maker routing; the cost sits in the spread. Exchange-routed (fee-tier) orders pay 0.95% taker or 0.50% maker at the lowest-volume tier. Minimum sizes are per trading pair and should be read from the API's `trading_pairs` endpoint.
+
+### Cited Findings
+
+**Pattern-day-trader context (dated)**
+- The SEC approved FINRA Rule 4210 amendments on 14 Apr 2026. FINRA Regulatory Notice 26-10 (20 Apr 2026) set **4 Jun 2026** as the effective date.
+  - The $25,000 minimum equity and the pattern-day-trader designation are removed and replaced by intraday-margin-based restrictions.
+  - Firms may phase in until **20 Oct 2027**.
+  - Schwab said it would stop counting day trades from 8 Jun 2026.
+  - — [ACA Global](https://www.acaglobal.com/industry-insights/finra-ends-the-pattern-day-trader-rule/); [FINRA weekly archive, 2026-04-22](https://www.finra.org/compliance-tools/weekly-archive/04222026); [Schwab Advisor Services](https://advisorservices.schwab.com/story/introduction-to-pattern-day-trader-rules); [tastytrade: "THE PDT RULE IS GONE"](https://tastytrade.com/pdt)
+  - Under the user's no-day-trading constraint, the PDT rule is moot. It matters only if the strategy changes.
+
+**Robinhood: equities (app and brokerage)**
+- Fractional shares can be traded in real time when valued at **$1 or more**. Orders can be placed in dollar amounts or share amounts; Robinhood's example is $10 becoming 0.1 shares.
+  - Fractional orders are generally handled on a "Not Held" basis.
+  - Fractional shares **cannot be transferred out**.
+  - — [Robinhood support: Fractional shares](https://robinhood.com/us/en/support/articles/fractional-shares), via search snippet, Oct 2026; [BrokerChooser](https://brokerchooser.com/invest-long-term/diversification/fractional-shares-robinhood)
+- Extended hours: fractional or dollar-amount orders are not executable in the After-Hours session (Customer Agreement, revised 1 Oct 2026), and market orders are not supported in extended hours. — [Robinhood Customer Agreement](https://cdn.robinhood.com/assets/robinhood/legal/Robinhood-Customer-Agreement.pdf); [Robinhood support: market order](https://robinhood.com/us/en/support/articles/market-order-update/?hcs=true)
+- Robinhood Gold is $5/month. A third party says Cortex requires it; it is not needed for API or MCP access per any source found. — [Tapeboard](https://tapeboard.com/blog/robinhood-legend-gaps)
+
+**Robinhood: Agentic Account via the Trading MCP**
+- Funding: the user funds the account "with an amount you choose" from a bank, another Robinhood account or an asset transfer, and can skip funding at setup. **No minimum is stated** on Robinhood's setup page. — [Robinhood support: Setting up an agent](https://robinhood.com/us/en/support/articles/setting-up-an-agent/), via search snippet, Oct 2026
+  - A Finder page lists a $0 minimum, but it is marked as paid promotion. — [Finder](https://www.finder.com/stock-trading/robinhood-agentic-accounts)
+- Robinhood allows **only one margin account per customer**. If the main account uses margin, the Agentic account will be a cash account. Instant Deposit limits are shared across self-directed accounts. — [Walnut help, Oct 2026](https://walnutinvest.com/help/robinhood-agentic-account), a third-party app that uses Robinhood's agent trading
+- The official server's order tool is reportedly `place_equity_order`, which places a real order with Agentic-account funds. — [PolicyLayer tool listing](https://policylayer.com/tools/robinhood-agentic-trading.md)
+- Fractional and dollar orders through the MCP: **conflicting third-party reports.**
+  - A community Robinhood agent server says fractional shares are supported for opening or adding to a long buy.
+  - Another guide says "whole shares only", adding that fractional shares break stop-loss placement on some Robinhood account types.
+  - A help page lists market orders "by shares or by dollars", limit, stop limit and stop market.
+  - — [kevin1chun/robinhood-for-agents](https://github.com/kevin1chun/robinhood-for-agents); [Walnut help](https://walnutinvest.com/help/robinhood-agentic-account); [HackerNoon guide](https://hackernoon.com/how-to-build-an-autonomous-ai-trading-agent-on-robinhood). The search summary did not pin each claim to a single URL; treat as unverified.
+
+**Robinhood Crypto Trading API: minimums, fees and spreads**
+- Official Robinhood Crypto fee schedule (PDF; the filename suggests 22 Jun 2026):
+  - Exchange-routed crypto orders use nine 30-day-volume tiers, from **0.95% taker / 0.50% maker at $0–$10K** down to **0.03% taker / 0.00% maker at $25M+**.
+  - The tier is locked when the order is placed.
+  - Default routing to market makers carries **no commission**; the cost is built into the spread.
+  - — [Robinhood Crypto fee schedule](https://cdn.robinhood.com/assets/robinhood/legal/rhc-fee-schedule.pdf)
+- A third party estimates the spread cost at about **$0.95 per $100** traded. — [BeginnerBull, 2026](https://beginnerbull.com/robinhood-fees-explained/) / [BloFin academy](https://blofin.com/en/academy/education/robinhood/robinhood-crypto-fees-explained); third-party estimate
+- A CryptoSlate review lists different Smart Exchange Routing rates (0.85%–0.10%), which conflict with the official PDF; the PDF takes precedence. — [CryptoSlate](https://cryptoslate.com/crypto-exchanges/robinhood-exchange-review/)
+- API v2 and fee tiers:
+  - Only v2 orders count toward fee-tier volume. — [Robinhood support: Crypto Trading API](https://robinhood.com/us/en/support/articles/crypto-api)
+  - v2 orders are charged the **taker** rate until maker/taker pricing is fully available. — [BloFin](https://blofin.com/en/academy/education/robinhood/robinhood-crypto-fees-explained)
+  - Maker/taker fees were still "rolling out gradually" and may not be available to every customer as of **19 Oct 2026**. — [Swan Bitcoin](https://www.swanbitcoin.com/industry/robinhood-fees/)
+- Minimum order size: per a third party, **$0.01 on market-maker routing and $0.03 on exchange routing**. — [BloFin](https://blofin.com/en/academy/education/robinhood/robinhood-crypto-fees-explained). A "$1/€1" minimum in another review appears to be a different product or region. — [CryptoSlate](https://cryptoslate.com/crypto-exchanges/robinhood-exchange-review/)
+- Per-pair limits come from `GET /api/v1/crypto/trading/trading_pairs/`, with fields `min_order_size`, `max_order_size`, `asset_increment` and `quote_increment`. — [apis.io OpenAPI profile](https://apis.io/apis/robinhood/robinhood-trading-pairs-api/); [robinrust source](https://docs.rs/crate/robinrust/1.0.3/source/src/trading.rs)
+  - The keel project reports that `max_order_size` varies by asset (for example 20 BTC, 6,500,000 DOGE). It also reports a `min_order_amount` field, in quote currency, present on 63 of 89 pairs; the size fields are in the base asset. — [keel issue #410](https://github.com/CodeGateSoftware/keel/issues/410); [keel PR #418](https://github.com/CodeGateSoftware/keel/pull/418). These are third-party; field names may differ from the official docs.
+
+**Alpaca**
+- Fractional and notional orders:
+  - **Minimum $1 notional for entry orders.** Since 24 Nov 2022, quantity-based fractional orders worth under $1 are rejected.
+  - `notional` and `qty` are mutually exclusive, with up to 9 decimal places.
+  - — [Alpaca support](https://alpaca.markets/support/can-we-submit-orders-smaller-than-1-usd-in-notional-value); [Alpaca docs: Fractional Trading](https://docs.alpaca.markets/us/docs/fractional-trading); [QuantConnect forum](https://www.quantconnect.com/forum/discussion/18853/fractional-shares-with-alpaca-brokerage-model/)
+- Fractional orders support market, limit, stop and stop-limit, but **only with time-in-force = DAY**. Fractional positions are long-only. — [Alpaca docs: Fractional Trading](https://docs.alpaca.markets/us/docs/fractional-trading); [Alpaca blog: fractional limit orders and extended hours](https://alpaca.markets/blog/fractional-shares-trading-supports-limit-orders-and-extended-hours/)
+- Fees: no commission on US-listed securities for self-directed accounts, though SEC/FINRA fees may apply. Fractional fees work the same as whole shares. — [Alpaca support: what is fractional trading](https://alpaca.markets/support/what-is-fractional-trading)
+- Minimum and data:
+  - **No minimum deposit** for individual accounts. — [Alpaca support](https://alpaca.markets/support/alpaca-minimum-deposit)
+  - The **free Basic data plan** is the default for paper and live: real-time IEX only, **30 WebSocket symbols**. Algo Trader Plus ($99/month) adds all exchanges and unlimited symbols. — [Alpaca docs: About Market Data API](https://docs.alpaca.markets/docs/about-market-data-api)
+
+**Interactive Brokers**
+- IBKR Lite has no account minimums or inactivity fees. A 2026 review lists $0 minimum and $0 inactivity for Lite and Pro. — [IBKR Lite page](https://www.interactivebrokers.com/en/trading/why-ibkr-lite.php); [NerdWallet 2026](https://www.nerdwallet.com/investing/reviews/interactive-brokers)
+  - A 2024 Benzinga piece said Pro needed $100 to start, which may be outdated. — [Benzinga](https://www.benzinga.com/money/interactive-brokers-pricing)
+- The commissions page lists "No minimums per order" and "No inactivity fees" for US stocks and ETFs. Fractional trades follow the plan's normal schedule. A per-order minimum of $1.00 (Pro) or $0.35 (Lite) appears in jumbled text; verify it. — [IBKR Commissions](https://www.interactivebrokers.com/commissions)
+- Dollar orders through the API:
+  - The Web API's `cashQty` sets an order's monetary value instead of share count.
+  - Without fractional trading enabled (Client Portal → Account Settings), cash-value orders round down to whole shares.
+  - — [IBKR Campus (Web API)](https://www.interactivebrokers.com/campus/ibkr-quant-news/how-to-code-a-currency-conversion-order-in-the-web-api/); [IBKR TWS release notes](https://interactivebrokers.com/en/general/tws_notes_979.php); [IBKR fractional share orders](https://interactivebrokers.ca/en/trading/orders/fractional-share-orders.php)
+- **API market data needs IBKR Pro (not Lite) and $500 in the account plus the subscription cost**, so a $100 account would need an external data feed. — [IBKR Campus: market data subscriptions](https://www.interactivebrokers.com/campus/ibkr-api-page/market-data-subscriptions/)
+
+**Charles Schwab**
+- Schwab's fractional product, Stock Slices, treats each slice as a separate order and does **not allow limit or conditional orders**. — [Schwab Stock Slices T&Cs](https://www.schwab.com/public/file/P-12533231)
+- No source found says whether the Trader API supports fractional or notional orders. — see Gaps
+- No account minimum, per a third party. — [QuantWheel](https://quantwheel.com/marketplace/brokers/schwab-vs-tastytrade)
+
+**Tradier**
+- Inactivity fee: **$50/year for accounts under $2,000 with fewer than 2 trades a year** (official pricing page). — [Tradier pricing](https://tradier.com/individuals/pricing); corroborated by [BrokerChooser](https://brokerchooser.com/invest-long-term/costs/inactivity-fee-tradier)
+- Fractional shares: conflicting. BrokerChooser says supported; Bankrate says only through some third-party platforms. — [BrokerChooser](https://brokerchooser.com/broker-reviews/tradier-review/tradier-stocks); [Bankrate](https://www.bankrate.com/investing/brokerage-reviews/tradier)
+- API access cost: free (docs) versus a $10/month tier (third-party review); see section 4.
+
+**Public.com**
+- The stock/ETF order endpoint takes **`quantity` or `amount` (not both)**. Quantity is used for whole shares and for selling fractional positions. — [Public API: Place order](https://public.com/api/docs/resources/order-placement/place-order)
+- Fractional minimum: conflicting. NerdWallet says $5 (and $100 for bonds). Public's disclosure says it won't accept fractional orders under $1.00, possibly in the investment-plan context. — [NerdWallet](https://www.nerdwallet.com/investing/best/best-brokers-for-fractional-shares); [Public fractional disclosure](https://public.com/disclosures/public-fractional-shares-disclosure)
+- Account fees: **$20 minimum deposit** and a **$3.99/month inactivity fee for accounts under $70 after 6 months of inactivity**, per a third party. — [BrokerChooser: Public inactivity fee](https://brokerchooser.com/invest-long-term/costs/inactivity-fee-publiccom); [BrokerChooser: Public vs E*TRADE](https://brokerchooser.com/compare/publiccom-vs-e-trade)
+- Crypto fees (reviews): flat fees from $0.49 (orders under $10) to about $6.29–$6.49 (orders of $250–$500), and 1.25% above $500. API trades use the same schedule as the app. — [Finder](https://www.finder.com/stock-trading/public-review); [StockBrokers.com](https://www.stockbrokers.com/review/public-com)
+  - New "API crypto fee tiers" by monthly volume took effect 16 Jun 2026 and may supersede this. — [Public API changelog](https://public.com/api/docs/changelog)
+
+**Webull OpenAPI**
+- The `entrust_type` parameter accepts a quantity (fractional decimals allowed) or a cash amount.
+  - **Only MARKET orders are supported for fractional trading.**
+  - The fractional quantity must be greater than 0 and at most 1.
+  - **The order value must be at least $5.**
+  - — [Webull developer docs: Stock Trading](https://developer.webull.com/apis/docs/trade-api/stock/)
+- SnapTrade's notes (January 2026) agree on the $5 minimum and say Webull now requires extra OTC and fractional-trading agreements. — [SnapTrade Webull notes](https://support.snaptrade.com/Webull-e1afeaa69a1c839ba37c0134f951baa2?pvs=21)
+- Fees:
+  - No extra fee for trading via OpenAPI; trading fees match the app. — [Webull HK developer FAQ](https://developer.webull.hk/apis/docs/faq)
+  - **OpenAPI market data is a separate subscription**; app and desktop subscriptions do not carry over. — [Webull Market Data API overview](https://developer.webull.com/apis/docs/market-data-api/overview/)
+  - A regional page offers Nasdaq Basic free. — [Webull AU subscribe quotes](https://developer.webull.com.au/apis/docs/market-data-api/subscribe-quotes); US pricing not confirmed
+
+**E*TRADE**
+- Fractional: conflicting. One source says DRIP only, with no direct fractional purchases. A 2026 source says fractional trading is now offered for some stocks and ETFs, with market-only orders for sub-one-share quantities. — [Brokerage-Review](https://www.brokerage-review.com/invest/partial/etrade-fractional-shares.aspx); [InvestingInTheWeb, 2026](https://investingintheweb.com/brokers/etrade-fractional-shares/). No API-specific source.
+- **$0 minimum deposit and no inactivity fee**, per a third party. An older $40/quarter inactivity fee appears outdated. — [BrokerChooser: E*TRADE fees](https://brokerchooser.com/broker-reviews/e-trade-review/e-trade-fees); [Kiplinger (old)](https://www.kiplinger.com/article/taxes/t055-c000-s002-broker-fee-fiasco.html)
+
+**tastytrade**
+- **No account minimum and no inactivity fee** (2026 review); exchange, clearing and regulatory fees still apply. — [InvestorMint](https://investormint.com/investing/brokers/tastyworks-review)
+- Fractional shares: **$5 minimum**, per a third party. — [BrokerChooser](https://brokerchooser.com/invest-long-term/diversification/fractional-shares-tastytrade)
+- TradersPost says fractional quantities are "not fully supported for automated trading on tastytrade stocks", but fractional crypto is fully supported. — [TradersPost docs: tastytrade](https://docs.traderspost.io/docs/all-supported-connections/tastytrade)
+
+**$100 swing-account summary** ("?" = not verified this session)
+
+| Broker | Fractional/notional via API | Min order | Account min | Small-account fees to watch |
+|---|---|---|---|---|
+| Robinhood (MCP Agentic acct) | Conflicting reports | $1 (app fractional) | None stated | None found; crypto spread / 0.95% taker at lowest tier |
+| Robinhood Crypto API | Yes (quote or asset amounts per pair) | Per pair (`trading_pairs`); ~$0.01–$0.03 per third party | Active RH Crypto acct | Spread (default) or fee tiers (v2) |
+| Alpaca | Yes, `notional` | $1 | $0 | Free IEX data (30 symbols); SEC/FINRA fees |
+| IBKR | Yes, `cashQty` (enable fractional) | Unclear | $0 (Lite) | API data needs Pro + $500 |
+| Schwab | ? (Stock Slices: no limit orders) | ? | $0 | ? |
+| Tradier | Conflicting | ? | ? | **$50/yr inactivity** (<$2k, <2 trades/yr) |
+| Public | Yes, `amount` | $1–$5 (conflicting) | $20 (third party) | **$3.99/mo inactivity** (<$70, 6 months) |
+| Webull | Yes, cash amount; market only | $5 | ? | Separate OpenAPI data subscription |
+| E*TRADE | ? | ? | $0 | None (third party) |
+| tastytrade | Limited for automation | $5 (third party) | $0 | Exchange/clearing fees |
+
+### Inferences
+- With only $100, a non-fractional broker or API path restricts the universe to stocks priced under about $100, and position sizing becomes lumpy. Notional orders (Alpaca, Robinhood app, Public, IBKR `cashQty`, Webull) matter far more than commissions here.
+- Swing-holding fractional positions overnight collides with order restrictions:
+  - Alpaca fractional orders are DAY-only, so a protective stop would need resubmitting each session.
+  - Webull fractional orders are market-only, so no resting stop is possible.
+  - Schwab Stock Slices bar limit and conditional orders.
+  - A swing app should either buy whole shares where stops matter, or implement software-side stop monitoring and plan for overnight gap risk.
+- Fixed fees hurt a $100 account most:
+  - Tradier's $50/year inactivity fee is 50% of capital per year for a low-activity account.
+  - Public's $3.99/month inactivity fee is about 48% a year if the balance falls below $70 and goes inactive.
+  - Paid data feeds such as Alpaca's $99/month Algo Trader Plus are clearly uneconomic. Free feeds (Alpaca Basic/IEX, Webull Nasdaq Basic) are the realistic choice.
+- For Robinhood crypto via API, a $100 account sits in the lowest volume tier. Exchange-routed v2 orders at 0.95% taker cost about the same as the estimated default spread (around $0.95 per $100), so routing choice changes little at this size.
+- IBKR is cheap to hold (no minimum, no inactivity fee) but impractical for API-driven data at $100 because of the $500 balance requirement for API market data.
+
+### Gaps
+- I could not confirm from official docs whether the Robinhood Trading MCP accepts dollar-amount or fractional orders, or which time-in-force values (GTC) it supports for overnight holds.
+- I could not get official Robinhood Crypto API minimum order sizes per pair or the exact v2 fee-tier API parameters; docs.robinhood.com was blocked.
+- Schwab Trader API fractional/notional support, IBKR minimum `cashQty` order size, Tradier's official fractional support, E*TRADE API fractional support, and Webull's US account minimum were all unverified.
+- I did not research cash-account settlement constraints (T+1 good-faith or free-riding violations), which matter for a $100 cash account that rotates capital between swing trades.
