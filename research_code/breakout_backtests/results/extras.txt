@@ -1,0 +1,59 @@
+large tickers 493 with data by Jan of year: {2005: 382, 2010: 416, 2016: 460, 2021: 483}
+small tickers 311 with data by Jan of year: {2005: 128, 2010: 158, 2016: 210, 2021: 279}
+large h=20 BASELINE mean exc 0.34 trimmed(top1% dropped) -0.00 | vsEW mean 0.00 trimmed -0.34
+   A: exc 0.21 trimmed -0.07 | vsEW -0.06 trimmed -0.35 (t -7.46) | tickers 493 | top10 tickers share of summed vsEW nan
+   B: exc 0.56 trimmed 0.23 | vsEW 0.24 trimmed -0.10 (t -1.14) | tickers 487 | top10 tickers share of summed vsEW 0.82
+   C: exc 0.52 trimmed 0.16 | vsEW 0.21 trimmed -0.15 (t -1.51) | tickers 492 | top10 tickers share of summed vsEW 0.83
+   D: exc 0.88 trimmed 0.34 | vsEW 0.46 trimmed -0.07 (t -0.45) | tickers 454 | top10 tickers share of summed vsEW 0.79
+large h=60 BASELINE mean exc 1.03 trimmed(top1% dropped) 0.37 | vsEW mean 0.00 trimmed -0.64
+   A: exc 0.71 trimmed 0.14 | vsEW -0.14 trimmed -0.71 (t -7.05) | tickers 493 | top10 tickers share of summed vsEW nan
+   B: exc 1.38 trimmed 0.74 | vsEW 0.52 trimmed -0.12 (t -0.79) | tickers 487 | top10 tickers share of summed vsEW 0.67
+   C: exc 1.03 trimmed 0.31 | vsEW 0.15 trimmed -0.56 (t -3.10) | tickers 492 | top10 tickers share of summed vsEW 2.47
+   D: exc 2.31 trimmed 1.18 | vsEW 1.23 trimmed 0.11 (t 0.44) | tickers 454 | top10 tickers share of summed vsEW 0.65
+small h=20 BASELINE mean exc -0.31 trimmed(top1% dropped) -1.00 | vsEW mean 0.00 trimmed -0.66
+   A: exc -0.77 trimmed -1.39 | vsEW -0.15 trimmed -0.75 (t -4.50) | tickers 309 | top10 tickers share of summed vsEW nan
+   B: exc -0.26 trimmed -1.03 | vsEW 0.28 trimmed -0.46 (t -1.64) | tickers 302 | top10 tickers share of summed vsEW 2.14
+   C: exc -0.79 trimmed -1.45 | vsEW -0.18 trimmed -0.83 (t -2.93) | tickers 291 | top10 tickers share of summed vsEW nan
+   D: exc -0.23 trimmed -1.21 | vsEW 0.07 trimmed -0.87 (t -2.41) | tickers 269 | top10 tickers share of summed vsEW 8.70
+small h=60 BASELINE mean exc -0.87 trimmed(top1% dropped) -2.23 | vsEW mean 0.00 trimmed -1.31
+   A: exc -1.48 trimmed -2.70 | vsEW 0.17 trimmed -1.01 (t -3.05) | tickers 309 | top10 tickers share of summed vsEW 3.50
+   B: exc -0.84 trimmed -2.31 | vsEW 0.57 trimmed -0.84 (t -1.78) | tickers 298 | top10 tickers share of summed vsEW 1.62
+   C: exc -2.03 trimmed -3.33 | vsEW -0.12 trimmed -1.36 (t -2.85) | tickers 288 | top10 tickers share of summed vsEW nan
+   D: exc -0.36 trimmed -2.27 | vsEW 0.23 trimmed -1.62 (t -2.65) | tickers 266 | top10 tickers share of summed vsEW 5.11
+D h60 total summed vsEW 43.54
+         n  sum_vs  mean_vs
+ticker                     
+CVNA    14   8.991    0.642
+SMCI    28   4.012    0.143
+TSLA    10   2.357    0.236
+AIG      7   2.204    0.315
+MNST    17   1.978    0.116
+FSLR    22   1.939    0.088
+MRNA     8   1.844    0.231
+FANG     5   1.801    0.360
+NVDA    14   1.650    0.118
+COIN     7   1.533    0.219
+D excl top10 tickers: N 3407 mean vsEW 0.447% t 1.57 mean exc 1.534%
+B h60 total summed vsEW 29.89
+         n  sum_vs  mean_vs
+ticker                     
+APP      5   2.933    0.587
+AMD     14   2.555    0.182
+SMCI    14   2.343    0.167
+MRNA     6   2.221    0.370
+TSLA     9   2.150    0.239
+NVDA    20   1.692    0.085
+MU      19   1.641    0.086
+NFLX    26   1.510    0.058
+AXON    16   1.435    0.090
+MNST    16   1.428    0.089
+B excl top10 tickers: N 5651 mean vsEW 0.177% t 1.06 mean exc 1.047%
+Price        Open   High    Low  Close       Volume
+Date                                               
+2021-08-02  35.97  37.98  35.30  37.68   19948500.0
+2021-08-03  37.91  48.59  37.16  46.80   93819200.0
+2021-08-04  54.45  85.00  54.40  70.39  175790500.0
+2021-08-05  62.90  66.50  50.46  50.97   82470400.0
+2021-08-06  57.77  60.88  53.10  55.01   70131700.0
+small open-outside-range bars by ticker: {'CBIO': 2189}
+by year: {2014: 246, 2015: 252, 2016: 252, 2017: 251, 2018: 251, 2019: 252, 2020: 253, 2021: 252, 2022: 180}
