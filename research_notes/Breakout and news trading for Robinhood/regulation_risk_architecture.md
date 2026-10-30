@@ -85,6 +85,8 @@ Holding periods and trade frequency matter for tax as well as regulation. The wa
 ### Takeaway
 At $100, the account type barely matters for PDT. PDT no longer exists at Robinhood after June 4, 2026, and a $100 account cannot borrow on margin anyway because the $2,000 FINRA minimum applies. The real differences are settlement and deposits. A Robinhood **cash** account cannot trade with unsettled sale proceeds (T+1) and loses Instant Deposits, which largely prevents good-faith and free-riding violations. An **Instant** (margin-type) account can reuse unsettled proceeds immediately and has Instant Deposits. Fractional orders have a $1 minimum, cover NMS stocks only, are market orders in dollars during regular hours and limit-only in extended hours. With fixed-fractional sizing of 1–2% risk, each trade risks $1–$2. Any recurring paid cost dwarfs plausible returns: a $5 subscription, a $5 VPS, or a $199+ real-time data feed.
 
+**User constraint (clarified): no minimum or maximum share price.** Any stock is in scope. Fractional shares let a $100 account hold a slice of a $500+ stock, so the account size is no reason to favour low-priced stocks. The only constraints are the $100 starting balance and no day trading. The one price-related limit comes from the broker: Robinhood's fractional eligibility (exchange-listed stocks only; an older page says priced above $1 with market cap above $25M). Sub-$1 or OTC names can still be bought in whole shares where Robinhood supports them, but not fractionally.
+
 ### Cited Findings
 **Account types**
 - **Margin vs cash at Robinhood.** Robinhood offers margin and cash accounts. In a margin account you can "instantly trade with funds from unsettled stock and option sales." In a cash account there is "No trading with unsettled funds from stock and options sales," and stocks and options take 1 trading day to settle. — [Robinhood, Settlement and buying power](https://robinhood.com/us/en/support/articles/settlement-and-buying-power/); [Robinhood investing accounts](https://robinhood.com/us/en/support/articles/robinhood-accounts/)
@@ -121,8 +123,11 @@ At $100, the account type barely matters for PDT. PDT no longer exists at Robinh
 - At 1–2% risk, each trade risks $1–$2. A $25 position with a 5% stop risks $1.25.
 - With the $1 fractional minimum, a reasonable cap is 3–5 concurrent positions of $20–$33 each, which keeps some cash for the next day while proceeds settle.
 - A daily loss limit of about 3% ($3) and a max drawdown kill at about 15–20% ($15–$20) would fit this scale.
+- **Size in dollars, not shares.** Because fractional orders are dollar-denominated, the fixed-fractional formula reduces to position $ = risk $ ÷ stop distance %, for example $1.25 ÷ 5% = $25, at any share price. A $25 slice of a $600 stock (about 0.042 shares) is as feasible as $25 of a $6 stock. The strategy universe should be chosen by liquidity, spread and catalyst, not by price.
+- **Expensive names.** High-priced stocks are reachable only through fractional orders. The bot must therefore respect fractional-order rules for them: $1 minimum, market orders in dollars during regular hours, limit-only in extended hours, and some symbols not eligible for extended-hours fractional orders. If Robinhood does not support stop orders on fractional positions (unverified; see Gaps), stops on these names must be enforced in software.
+- **Sub-$1 or OTC names.** These are not fractional-eligible, so at $100 they can only be bought in whole shares, which makes exact dollar sizing coarser. They are allowed under the user's rules but carry their own risks: wide spreads, wider LULD bands, and possible exchange restrictions.
 - Exits on fractional positions during extended hours must be limit orders.
-- Gaps and news spikes can blow through stops on small caps, so actual losses per trade may well exceed the planned $1–$2.
+- Gaps and news spikes can blow through stops on any stock, most of all on thinly traded or news-driven names, so actual losses per trade may well exceed the planned $1–$2.
 
 **Costs vs returns** (illustrative)
 - Even a strong 20%/year on $100 is $20/year.
@@ -290,7 +295,7 @@ Most retail backtests are biased upward by:
 - trying many variants and reporting the best one (multiple testing)
 - assuming mid-price fills on small caps (slippage)
 
-The remedies are point-in-time universes including delisted names, lagged inputs, a held-out set that is never touched, walk-forward validation, the Deflated Sharpe Ratio or probability of backtest overfitting to discount for the number of trials, and costs of at least the full spread plus impact. For breakout and news trading in small caps, slippage assumptions can decide whether a strategy is profitable at all.
+The remedies are point-in-time universes including delisted names, lagged inputs, a held-out set that is never touched, walk-forward validation, the Deflated Sharpe Ratio or probability of backtest overfitting to discount for the number of trials, and costs of at least the full spread plus impact. For breakout and news trading in small caps, slippage assumptions can decide whether a strategy is profitable at all. Per the user's clarification, the universe is not restricted by price, so costs should be modelled per name from its spread and liquidity.
 
 ### Cited Findings
 - **Survivorship bias.** Today's constituent list is the wrong universe for historical tests; one source says roughly a third to a half of the S&P 500 turns over every ten years. Use datasets that keep dead tickers and delisted securities with their final returns. — [LuxAlgo, survivorship bias](https://www.luxalgo.com/blog/survivorship-bias-in-backtesting-explained); [DEV Community, survivorship vs look-ahead](https://dev.to/tradevodata/survivorship-bias-vs-lookahead-bias-the-two-silent-backtest-killers-pmm)
@@ -305,7 +310,8 @@ The remedies are point-in-time universes including delisted names, lagged inputs
 
 ### Inferences
 - **Fills for breakout and news strategies.** Model entries at the *ask* (or ask plus ticks) at the bar after the signal, never the signal bar's close. Model stops as filling at the next available price after a gap, not at the stop level. Exclude or haircut fills during LULD pauses and the first minutes after halts.
-- **$100 account.** Market impact is negligible at this size, but spread cost is not. Fractional market orders on $1–$5 stocks with wide spreads can cost 1–3% round trip, which overwhelms typical breakout edges. Prefer liquid, tight-spread names or limit entries.
+- **$100 account, any share price.** Market impact is negligible at this size, so the cost that matters is the **spread as a percentage of price**, not the share price itself. A liquid large cap quoted $0.01 wide at $200 costs about 0.5 bps per round trip. A thin small cap quoted $0.05 wide at $5 costs about 100 bps. Because fractional shares remove any need to favour cheap stocks, the backtester should model costs per name from historical spread data (or a spread-bps proxy by liquidity bucket), not from a price-based "small cap" assumption. The small-cap figures above apply only when the strategy actually trades thin names.
+- **Bars and fills for fractional orders.** Fractional orders fill at Robinhood's market price, with dollar amounts converted to shares, so model them as marketable at the prevailing ask during regular hours. Off-hours fractional orders are limit-only or queue to the open, so model those as possibly unfilled.
 - **Walk-forward protocol.** Optimise on window *k* and test on window *k+1*, roll forward, and report only the concatenated out-of-sample results. Count every configuration tried and feed that count into the DSR.
 - **Paper trading as a check.** Paper trading tests execution assumptions as well as signals. Compare paper fills with the backtest's assumed fills before going live.
 

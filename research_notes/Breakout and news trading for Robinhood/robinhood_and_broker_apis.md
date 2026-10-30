@@ -348,9 +348,25 @@ Unofficial private-API scraping of the main account is technically possible but 
 - The MCP's actual order types, rate limits, session or token lifetime, and any rules on non-LLM automated clients are unverified; Robinhood's docs and support hosts were blocked.
 - I found no confirmation of a Robinhood market-data streaming API or webhooks for retail developers.
 
-## 6. Added constraint: $100 account, no day trading (swing holds overnight or longer). Fractional and notional orders, minimum order sizes, small-account fees, and Robinhood Crypto API minimums and fees
+## 6. Added constraint: $100 account, no day trading (swing holds overnight or longer), no share-price limit. Fractional and notional orders, minimum order sizes, small-account fees, and Robinhood Crypto API minimums and fees
 
-### Takeaway
+User clarification (received 2026-10-30): there is no minimum or maximum share price. Any stock is eligible because fractional or dollar-amount orders let a $100 account buy expensive stocks. **Fractional and notional order support through each broker's API is therefore a primary comparison point.** The only constraints are the $100 starting balance and no day trading.
+
+### Takeaway (fractional and notional via API, ranked by how well confirmed it is in official sources)
+1. **Confirmed in official API docs:**
+   - **Alpaca:** `notional` or fractional `qty`, $1 minimum; fractional orders are DAY-only.
+   - **Webull OpenAPI:** cash-amount `entrust_type`, $5 minimum, MARKET orders only.
+   - **Public:** `amount` field.
+   - **tastytrade:** "Notional Market" order type; third-party integrators say automation support is partial.
+   - **IBKR:** `cashQty`, with fractional trading enabled in account settings; an older forum post conflicts.
+2. **Unconfirmed or conflicting:**
+   - **Robinhood Trading MCP:** the `place_equity_order` schema was not found; third-party claims conflict.
+   - **Tradier:** SnapTrade claims fractional support; nothing official.
+3. **Probably not supported via API:**
+   - **E*TRADE:** API "DOLLAR" quantity type noted as unavailable by a community client.
+   - **Schwab Trader API:** no source either way; Stock Slices is an app feature that bars limit orders.
+
+Other points (unchanged):
 A $100 swing account is workable at Robinhood, Alpaca, IBKR Lite, E*TRADE and tastytrade, which all report $0 minimums and no inactivity fees.
 
 Watch-outs:
@@ -397,6 +413,7 @@ Robinhood Crypto charges no commission on default market-maker routing; the cost
   - Another guide says "whole shares only", adding that fractional shares break stop-loss placement on some Robinhood account types.
   - A help page lists market orders "by shares or by dollars", limit, stop limit and stop market.
   - — [kevin1chun/robinhood-for-agents](https://github.com/kevin1chun/robinhood-for-agents); [Walnut help](https://walnutinvest.com/help/robinhood-agentic-account); [HackerNoon guide](https://hackernoon.com/how-to-build-an-autonomous-ai-trading-agent-on-robinhood). The search summary did not pin each claim to a single URL; treat as unverified.
+- No public parameter schema was found for `place_equity_order`, so dollar-amount fields and time-in-force values are unknown. The PolicyLayer listing rates it a critical-risk financial action. — [PolicyLayer](https://policylayer.com/tools/robinhood-agentic-trading.md), searched 2026-10-30. The definitive check is to call MCP `tools/list` against `https://agent.robinhood.com/mcp/trading` after OAuth and read the input schema; I did not do this.
 
 **Robinhood Crypto Trading API: minimums, fees and spreads**
 - Official Robinhood Crypto fee schedule (PDF; the filename suggests 22 Jun 2026):
@@ -433,16 +450,22 @@ Robinhood Crypto charges no commission on default market-maker routing; the cost
   - The Web API's `cashQty` sets an order's monetary value instead of share count.
   - Without fractional trading enabled (Client Portal → Account Settings), cash-value orders round down to whole shares.
   - — [IBKR Campus (Web API)](https://www.interactivebrokers.com/campus/ibkr-quant-news/how-to-code-a-currency-conversion-order-in-the-web-api/); [IBKR TWS release notes](https://interactivebrokers.com/en/general/tws_notes_979.php); [IBKR fractional share orders](https://interactivebrokers.ca/en/trading/orders/fractional-share-orders.php)
+  - Conflict: an older QuantConnect forum post (date not visible) quotes "Fractional trading is not supported via IBKR API or FIX/CTCI at this time." — [QuantConnect forum](https://www.quantconnect.com/forum/discussion/11770/buying-fractional-shares/). The IBKR-hosted notes above on `cashQty` and fractional settings are more authoritative but may be newer; confirm with a paper-account test.
 - **API market data needs IBKR Pro (not Lite) and $500 in the account plus the subscription cost**, so a $100 account would need an external data feed. — [IBKR Campus: market data subscriptions](https://www.interactivebrokers.com/campus/ibkr-api-page/market-data-subscriptions/)
 
 **Charles Schwab**
 - Schwab's fractional product, Stock Slices, treats each slice as a separate order and does **not allow limit or conditional orders**. — [Schwab Stock Slices T&Cs](https://www.schwab.com/public/file/P-12533231)
-- No source found says whether the Trader API supports fractional or notional orders. — see Gaps
+- Stock Slices truncates fractional holdings to four decimal places. — [Schwab Stock Slices T&Cs](https://www.schwab.com/public/file/P-12533231)
+- A targeted search on 2026-10-30 found no source on whether the Trader API supports fractional or notional orders. Treat it as unsupported until shown otherwise. — see Gaps
 - No account minimum, per a third party. — [QuantWheel](https://quantwheel.com/marketplace/brokers/schwab-vs-tastytrade)
 
 **Tradier**
 - Inactivity fee: **$50/year for accounts under $2,000 with fewer than 2 trades a year** (official pricing page). — [Tradier pricing](https://tradier.com/individuals/pricing); corroborated by [BrokerChooser](https://brokerchooser.com/invest-long-term/costs/inactivity-fee-tradier)
 - Fractional shares: conflicting. BrokerChooser says supported; Bankrate says only through some third-party platforms. — [BrokerChooser](https://brokerchooser.com/broker-reviews/tradier-review/tradier-stocks); [Bankrate](https://www.bankrate.com/investing/brokerage-reviews/tradier)
+  - The integrator SnapTrade lists "fractional trading in shares" for its Tradier integration. — [SnapTrade: Tradier API](https://snaptrade.com/brokerage-integrations/tradier-api)
+  - A community MCP server sends a float `quantity` to Tradier's orders endpoint. That shows the code path, not that fills occur. — [glama: ReadyTrader tradier_service.py](https://glama.ai/mcp/servers/@up2itnow/ReadyTrader-Stocks/blob/dad47997bbc257b0c14f958b186af6186cfa5ed7/execution/tradier_service.py)
+  - QuantConnect's Tradier docs do not mention fractional quantities. — [QuantConnect: Tradier](https://www.quantconnect.com/docs/v2/cloud-platform/live-trading/brokerages/tradier)
+  - I found no dollar-amount (notional) order parameter for Tradier.
 - API access cost: free (docs) versus a $10/month tier (third-party review); see section 4.
 
 **Public.com**
@@ -466,27 +489,38 @@ Robinhood Crypto charges no commission on default market-maker routing; the cost
 
 **E*TRADE**
 - Fractional: conflicting. One source says DRIP only, with no direct fractional purchases. A 2026 source says fractional trading is now offered for some stocks and ETFs, with market-only orders for sub-one-share quantities. — [Brokerage-Review](https://www.brokerage-review.com/invest/partial/etrade-fractional-shares.aspx); [InvestingInTheWeb, 2026](https://investingintheweb.com/brokers/etrade-fractional-shares/). No API-specific source.
+- E*TRADE API dollar orders:
+  - A community R client for the E*TRADE API lists quantity types QUANTITY, DOLLAR and ALL_I_OWN, but notes "DOLLAR is not yet an option". — [etrader R package](https://search.r-project.org/CRAN/refmans/etrader/html/etrd_place_optn_order.html)
+  - Chilkat sample preview orders use `QUANTITY` only. — [Chilkat E*TRADE preview order example](https://example-code.com/objc/etrade_v1_preview_order.asp)
+  - A review says E*TRADE's software "does not accept a whole-dollar amount" for fractional orders, with the capability planned. — [Brokerage-Review](https://www.brokerage-review.com/invest/partial/etrade-fractional-shares.aspx), undated
+  - Net: no evidence of notional orders via the E*TRADE API.
 - **$0 minimum deposit and no inactivity fee**, per a third party. An older $40/quarter inactivity fee appears outdated. — [BrokerChooser: E*TRADE fees](https://brokerchooser.com/broker-reviews/e-trade-review/e-trade-fees); [Kiplinger (old)](https://www.kiplinger.com/article/taxes/t055-c000-s002-broker-fee-fiasco.html)
 
 **tastytrade**
 - **No account minimum and no inactivity fee** (2026 review); exchange, clearing and regulatory fees still apply. — [InvestorMint](https://investormint.com/investing/brokers/tastyworks-review)
 - Fractional shares: **$5 minimum**, per a third party. — [BrokerChooser](https://brokerchooser.com/invest-long-term/diversification/fractional-shares-tastytrade)
+- The official Open API orders schema includes a **"Notional Market"** order type (alongside Limit, Market, Marketable Limit, Stop and Stop Limit).
+  - A dollar-value field is required for it, and `quantity` is required for every order type except notional market.
+  - A value-effect field marks debit or credit.
+  - The docs navigation lists a "Fractional Stock Orders" guide, but its content was not retrieved.
+  - — [tastytrade Open API spec: orders](https://developer.tastytrade.com/open-api-spec/orders/); [tastytrade guide: place an equity order](https://developer.tastytrade.com/docs/guides/place-an-equity-order/); [api-evangelist schema copy](https://raw.githubusercontent.com/api-evangelist/tastytrade/refs/heads/main/json-schema/orders-postAccountsAccountNumberOrders.json)
+  - "Notional Market" implies dollar-based orders are market-only, so no notional limit or stop orders. This is inferred from the order-type list, not stated.
 - TradersPost says fractional quantities are "not fully supported for automated trading on tastytrade stocks", but fractional crypto is fully supported. — [TradersPost docs: tastytrade](https://docs.traderspost.io/docs/all-supported-connections/tastytrade)
 
 **$100 swing-account summary** ("?" = not verified this session)
 
 | Broker | Fractional/notional via API | Min order | Account min | Small-account fees to watch |
 |---|---|---|---|---|
-| Robinhood (MCP Agentic acct) | Conflicting reports | $1 (app fractional) | None stated | None found; crypto spread / 0.95% taker at lowest tier |
+| Robinhood (MCP Agentic acct) | Unconfirmed: `place_equity_order` schema not found; conflicting third-party claims | $1 (app fractional) | None stated | None found; crypto spread / 0.95% taker at lowest tier |
 | Robinhood Crypto API | Yes (quote or asset amounts per pair) | Per pair (`trading_pairs`); ~$0.01–$0.03 per third party | Active RH Crypto acct | Spread (default) or fee tiers (v2) |
-| Alpaca | Yes, `notional` | $1 | $0 | Free IEX data (30 symbols); SEC/FINRA fees |
-| IBKR | Yes, `cashQty` (enable fractional) | Unclear | $0 (Lite) | API data needs Pro + $500 |
-| Schwab | ? (Stock Slices: no limit orders) | ? | $0 | ? |
-| Tradier | Conflicting | ? | ? | **$50/yr inactivity** (<$2k, <2 trades/yr) |
-| Public | Yes, `amount` | $1–$5 (conflicting) | $20 (third party) | **$3.99/mo inactivity** (<$70, 6 months) |
-| Webull | Yes, cash amount; market only | $5 | ? | Separate OpenAPI data subscription |
-| E*TRADE | ? | ? | $0 | None (third party) |
-| tastytrade | Limited for automation | $5 (third party) | $0 | Exchange/clearing fees |
+| Alpaca | **Yes (official docs)**: `notional` or fractional `qty`; market/limit/stop/stop-limit, DAY only | $1 | $0 | Free IEX data (30 symbols); SEC/FINRA fees |
+| IBKR | Yes, `cashQty` with fractional enabled (an older forum post conflicts) | Unclear | $0 (Lite) | API data needs Pro + $500 |
+| Schwab | No evidence (Stock Slices is app-only; no limit orders) | ? | $0 | ? |
+| Tradier | Fractional qty claimed by SnapTrade only; no notional field found | ? | ? | **$50/yr inactivity** (<$2k, <2 trades/yr) |
+| Public | **Yes (official docs)**: `amount` or `quantity` | $1–$5 (conflicting) | $20 (third party) | **$3.99/mo inactivity** (<$70, 6 months) |
+| Webull | **Yes (official docs)**: cash amount; MARKET only | $5 | ? | Separate OpenAPI data subscription |
+| E*TRADE | No: API "DOLLAR" qty type "not yet an option" (community client) | ? | $0 | None (third party) |
+| tastytrade | **Yes (official spec)**: "Notional Market" order type; automation support partial per TradersPost | $5 (third party) | $0 | Exchange/clearing fees |
 
 ### Inferences
 - With only $100, a non-fractional broker or API path restricts the universe to stocks priced under about $100, and position sizing becomes lumpy. Notional orders (Alpaca, Robinhood app, Public, IBKR `cashQty`, Webull) matter far more than commissions here.
