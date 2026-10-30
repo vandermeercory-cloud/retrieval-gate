@@ -523,7 +523,11 @@ Robinhood Crypto charges no commission on default market-maker routing; the cost
 | tastytrade | **Yes (official spec)**: "Notional Market" order type; automation support partial per TradersPost | $5 (third party) | $0 | Exchange/clearing fees |
 
 ### Inferences
-- With only $100, a non-fractional broker or API path restricts the universe to stocks priced under about $100, and position sizing becomes lumpy. Notional orders (Alpaca, Robinhood app, Public, IBKR `cashQty`, Webull) matter far more than commissions here.
+- With no share-price limit and a $100 balance, fractional or notional support through the API is close to a hard requirement. Without it, any stock priced above the available cash is unreachable, and position sizing becomes lumpy.
+  - On the evidence above, the strongest fits are **Alpaca, Public, Webull and tastytrade**, which have official dollar-order fields or types, followed by IBKR (`cashQty`, but API data needs $500).
+  - **Robinhood's MCP** needs a live `tools/list` check before relying on it.
+  - **Schwab, E*TRADE and probably Tradier** are poor fits for a fractional-dependent $100 strategy.
+- Most notional paths are market-only (Webull, tastytrade's "Notional Market") or DAY-only (Alpaca). The app should place dollar-based entries during regular hours with a price-deviation guard, rather than relying on resting notional limit orders.
 - Swing-holding fractional positions overnight collides with order restrictions:
   - Alpaca fractional orders are DAY-only, so a protective stop would need resubmitting each session.
   - Webull fractional orders are market-only, so no resting stop is possible.
@@ -539,5 +543,11 @@ Robinhood Crypto charges no commission on default market-maker routing; the cost
 ### Gaps
 - I could not confirm from official docs whether the Robinhood Trading MCP accepts dollar-amount or fractional orders, or which time-in-force values (GTC) it supports for overnight holds.
 - I could not get official Robinhood Crypto API minimum order sizes per pair or the exact v2 fee-tier API parameters; docs.robinhood.com was blocked.
-- Schwab Trader API fractional/notional support, IBKR minimum `cashQty` order size, Tradier's official fractional support, E*TRADE API fractional support, and Webull's US account minimum were all unverified.
+- Still unverified after targeted searches on 2026-10-30:
+  - Schwab Trader API fractional/notional support: no source either way.
+  - IBKR minimum `cashQty` order size, and whether the old "not supported via API" statement still applies.
+  - Tradier's official fractional support.
+  - tastytrade's "Fractional Stock Orders" guide contents and its notional minimum.
+  - Webull's US account minimum.
+  - Whether fractional positions can be sold, or have stops attached, via each API.
 - I did not research cash-account settlement constraints (T+1 good-faith or free-riding violations), which matter for a $100 cash account that rotates capital between swing trades.
